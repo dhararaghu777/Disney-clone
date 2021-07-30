@@ -1,56 +1,58 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import React,{useEffect} from 'react';
 import './App.css';
+import Header from './container/Header';
+import Home from './container/Home';
+import Details from './container/Details';
+import Login from './container/Login';
+import {BrowserRouter as Router, Switch, Link, Route,Redirect} from 'react-router-dom';
+import {auth} from './firebase';
+import {setUser, removeUser} from './app/userReducer';
+import {useSelector,useDispatch} from 'react-redux';
+import VideoPlay from './components/videoPlay';
+
+
 
 function App() {
+  const dispatch= useDispatch();
+  const user=useSelector(state=>state.users.user);
+
+  useEffect(()=>{
+    auth.onAuthStateChanged(user=>{
+      if(user){
+        // console.log(user)
+        dispatch(setUser(user))
+      }
+      else{
+        dispatch(removeUser());
+      }
+    })
+  },[])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+      <Router>
+        <Switch>
+          <Route path="/video" >
+            <VideoPlay />
+          </Route>
+          <Route path="/login">
+            {!user ? 
+            <>
+            <Header />
+            <Login />
+            </> : <Redirect to="/"/>}
+            
+          </Route>
+          <Route path="/details" >
+            <Header />
+            <Details />
+          </Route>
+          <Route path="/">
+            <Header />
+            <Home />
+          </Route>
+        </Switch>
+      </Router>
     </div>
   );
 }
